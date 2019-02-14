@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["GLADE_SRC",""],["_IMPL_DESERIALIZE_FOR_MeasureWidth",""]],"struct":[["MainState",""],["MainWin",""],["MeasureWidth",""]]});
