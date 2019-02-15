@@ -1225,6 +1225,10 @@
 <span id="1225">1225</span>
 <span id="1226">1226</span>
 <span id="1227">1227</span>
+<span id="1228">1228</span>
+<span id="1229">1229</span>
+<span id="1230">1230</span>
+<span id="1231">1231</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">linecache</span>::{<span class="ident">Line</span>, <span class="ident">LineCache</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">main_win</span>::<span class="ident">MainState</span>;
@@ -1589,7 +1593,11 @@
                     <span class="string">&quot;surrounding_pairs&quot;</span> <span class="op">=&gt;</span> (),
                     <span class="string">&quot;save_with_newline&quot;</span> <span class="op">=&gt;</span> (),
                     <span class="kw">_</span> <span class="op">=&gt;</span> {
-                        <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;Unhandled config option, open a bug report!&quot;</span>), <span class="ident">name</span>);
+                        <span class="macro">error</span><span class="macro">!</span>(
+                            <span class="string">&quot;{}: {}&quot;</span>,
+                            <span class="ident">gettext</span>(<span class="string">&quot;Unhandled config option, open a bug report!&quot;</span>),
+                            <span class="ident">name</span>
+                        );
                     }
                 }
             }
