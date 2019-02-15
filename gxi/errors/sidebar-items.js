@@ -1,1 +1,0 @@
-initSidebarItems({"constant":[["_DERIVE_failure_Fail_FOR_Error",""],["_DERIVE_failure_core_fmt_Display_FOR_Error",""]],"enum":[["Error",""]],"struct":[["ErrorDialog","A simple ErrorDialog used for if stuff goes south."]]});

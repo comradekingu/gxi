@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["set_source_color",""]],"struct":[["Color",""],["Style",""],["Theme",""]]});

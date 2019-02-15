@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["start_xi_thread",""]],"struct":[["ChanReader",""],["ChanWriter",""],["XiPeer",""]]});

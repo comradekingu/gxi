@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["AboutWin","The about window, which displays some simple info about gxi"]]});

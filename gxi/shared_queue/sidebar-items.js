@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["CoreMsg",""]],"struct":[["ErrMsg",""],["SharedQueue",""]]});
