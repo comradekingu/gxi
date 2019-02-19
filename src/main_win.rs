@@ -21,6 +21,13 @@ use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
+#[derive(Debug, PartialEq)]
+enum SaveAction {
+    Save,
+    CloseWithoutSave,
+    Cancel,
+}
+
 #[derive(Deserialize)]
 pub struct MeasureWidth {
     pub id: u64,
@@ -124,9 +131,14 @@ impl MainWin {
 
         window.set_application(application);
 
-        window.connect_delete_event(clone!(window => move |_, _| {
-            window.destroy();
-            Inhibit(false)
+        //This is called when the window is closed with the 'X' or via the application menu, etc.
+        window.connect_delete_event(clone!(main_win, window => move |_, _| {
+            if MainWin::close_all(main_win.clone()) != SaveAction::Cancel {
+                window.destroy();
+                Inhibit(false)
+            } else {
+                Inhibit(true)
+            }
         }));
 
         {
@@ -217,15 +229,17 @@ impl MainWin {
         {
             let close_all_action = SimpleAction::new("close_all", None);
             close_all_action.connect_activate(clone!(main_win => move |_,_| {
-                MainWin::close_all(&main_win.clone());
+                MainWin::close_all(main_win.clone());
             }));
             application.add_action(&close_all_action);
         }
         {
+            // This is called when we run app.quit, e.g. via Ctrl+Q
             let quit_action = SimpleAction::new("quit", None);
             quit_action.connect_activate(clone!(main_win => move |_,_| {
-                let main_win = main_win.borrow();
-                main_win.window.destroy();
+                if MainWin::close_all(main_win.clone()) != SaveAction::Cancel {
+                    main_win.borrow().window.destroy();
+                }
             }));
             application.add_action(&quit_action);
         }
@@ -836,39 +850,53 @@ impl MainWin {
         }
     }
 
-    fn close_all(main_win: &Rc<RefCell<MainWin>>) {
-        let edit_view = main_win.borrow().get_current_edit_view();
-        MainWin::close_view(&main_win, &edit_view);
+    fn close_all(main_win: Rc<RefCell<MainWin>>) -> SaveAction {
+        main_win.borrow_mut().views.iter().for_each(|(_,ev)| {
+            MainWin::close_view(&main_win.clone(), &ev);
+        });
+        SaveAction::Cancel
     }
 
-    fn close(main_win: &Rc<RefCell<MainWin>>) {
+    fn close(main_win: &Rc<RefCell<MainWin>>) -> SaveAction {
         let edit_view = main_win.borrow().get_current_edit_view();
-        MainWin::close_view(&main_win, &edit_view);
+        MainWin::close_view(&main_win, &edit_view)
     }
 
-    fn close_view(main_win: &Rc<RefCell<MainWin>>, edit_view: &Rc<RefCell<EditView>>) {
+    fn close_view(
+        main_win: &Rc<RefCell<MainWin>>,
+        edit_view: &Rc<RefCell<EditView>>,
+    ) -> SaveAction {
         let pristine = edit_view.borrow().pristine;
-        if !pristine {
+        let save_action = if !pristine {
             let builder = Builder::new_from_string(&GLADE_SRC);
             let ask_save_dialog: Dialog = builder.get_object("ask_save_dialog").unwrap();
             let ret = ask_save_dialog.run();
             ask_save_dialog.destroy();
             debug!("{}: {}", gettext("AskSaveDialog response (1=save)"), ret);
             match ret {
-                1 => MainWin::save_as(main_win, edit_view),
-                2 => return,
-                _ => {}
-            };
-        }
-        let view_id = edit_view.borrow().view_id.clone();
-        let mut main_win = main_win.borrow_mut();
-        if let Some(w) = main_win.view_id_to_w.get(&view_id).map(Clone::clone) {
-            if let Some(page_num) = main_win.notebook.page_num(&w) {
-                main_win.notebook.remove_page(Some(page_num));
+                1 => {MainWin::save_as(main_win, edit_view); SaveAction::Save},
+                2 => SaveAction::Cancel,
+                3 => SaveAction::CloseWithoutSave,
+                _ => SaveAction::Cancel
             }
-            main_win.w_to_ev.remove(&w.clone());
+        } else {
+            SaveAction::CloseWithoutSave
+        };
+
+        error!("SaveAction: {:?}", save_action);
+
+        if save_action != SaveAction::Cancel {
+            let view_id = edit_view.borrow().view_id.clone();
+            let mut main_win = main_win.borrow_mut();
+            if let Some(w) = main_win.view_id_to_w.get(&view_id).map(Clone::clone) {
+                if let Some(page_num) = main_win.notebook.page_num(&w) {
+                    main_win.notebook.remove_page(Some(page_num));
+                }
+                main_win.w_to_ev.remove(&w.clone());
+            }
+            main_win.view_id_to_w.remove(&view_id);
+            main_win.core.borrow().close_view(&view_id);
         }
-        main_win.view_id_to_w.remove(&view_id);
-        main_win.core.borrow().close_view(&view_id);
+        save_action
     }
 }
