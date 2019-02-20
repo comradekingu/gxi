@@ -1842,7 +1842,7 @@
         <span class="kw">let</span> <span class="ident">main_state</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">main_state</span>.<span class="ident">borrow</span>();
 
         <span class="comment">//FIXME: Xi sends us the &#39;ln&#39; (logical linenumber) param for this, but that isn&#39;t updated on every draw!</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_line</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current_line</span> <span class="op">=</span> <span class="ident">first_line</span>;
 
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">first_line</span>..<span class="ident">last_line</span> {
             <span class="comment">// Keep track of the starting x position</span>

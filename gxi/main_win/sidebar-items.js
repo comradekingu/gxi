@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["GLADE_SRC",""],["_IMPL_DESERIALIZE_FOR_MeasureWidth",""]],"struct":[["MainState",""],["MainWin",""],["MeasureWidth",""]]});
+initSidebarItems({"constant":[["GLADE_SRC",""],["_IMPL_DESERIALIZE_FOR_MeasureWidth",""]],"enum":[["SaveAction",""]],"struct":[["MainState",""],["MainWin",""],["MeasureWidth",""]]});

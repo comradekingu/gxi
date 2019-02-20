@@ -198,6 +198,9 @@
 <span id="198">198</span>
 <span id="199">199</span>
 <span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Welcome to the gxi docs!</span>
 <span class="doccomment">//! Since gxi isn&#39;t a library these docs are meant to help contributors understand gxi&#39;s code.</span>
@@ -288,6 +291,7 @@
 <span class="kw">use</span> <span class="ident">gio</span>::{<span class="ident">ApplicationExt</span>, <span class="ident">ApplicationExtManual</span>, <span class="ident">ApplicationFlags</span>, <span class="ident">FileExt</span>};
 <span class="kw">use</span> <span class="ident">glib</span>::<span class="ident">MainContext</span>;
 <span class="kw">use</span> <span class="ident">gtk</span>::<span class="ident">Application</span>;
+<span class="kw">use</span> <span class="ident">human_panic</span>::<span class="ident">setup_panic</span>;
 <span class="kw">use</span> <span class="ident">log</span>::{<span class="ident">debug</span>, <span class="ident">info</span>, <span class="ident">warn</span>};
 <span class="kw">use</span> <span class="ident">serde_json</span>::{<span class="ident">json</span>, <span class="ident">Value</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
@@ -296,6 +300,8 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
 
 <span class="kw">fn</span> <span class="ident">main</span>() {
+    <span class="macro">setup_panic</span><span class="macro">!</span>();
+
     <span class="ident">env_logger</span>::<span class="ident">Builder</span>::<span class="ident">from_default_env</span>()
         .<span class="ident">default_format_timestamp</span>(<span class="bool-val">false</span>)
         .<span class="ident">init</span>();

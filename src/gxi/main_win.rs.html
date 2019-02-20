@@ -872,6 +872,32 @@
 <span id="872">872</span>
 <span id="873">873</span>
 <span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
+<span id="889">889</span>
+<span id="890">890</span>
+<span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">about_win</span>::<span class="ident">AboutWin</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">edit_view</span>::<span class="ident">EditView</span>;
@@ -895,6 +921,13 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">thread</span>;
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="kw">enum</span> <span class="ident">SaveAction</span> {
+    <span class="ident">Save</span>,
+    <span class="ident">CloseWithoutSave</span>,
+    <span class="ident">Cancel</span>,
+}
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MeasureWidth</span> {
@@ -999,9 +1032,14 @@
 
         <span class="ident">window</span>.<span class="ident">set_application</span>(<span class="ident">application</span>);
 
-        <span class="ident">window</span>.<span class="ident">connect_delete_event</span>(<span class="macro">clone</span><span class="macro">!</span>(<span class="ident">window</span> <span class="op">=&gt;</span> <span class="kw">move</span> <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">|</span> {
-            <span class="ident">window</span>.<span class="ident">destroy</span>();
-            <span class="ident">Inhibit</span>(<span class="bool-val">false</span>)
+        <span class="comment">//This is called when the window is closed with the &#39;X&#39; or via the application menu, etc.</span>
+        <span class="ident">window</span>.<span class="ident">connect_delete_event</span>(<span class="macro">clone</span><span class="macro">!</span>(<span class="ident">main_win</span>, <span class="ident">window</span> <span class="op">=&gt;</span> <span class="kw">move</span> <span class="op">|</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">|</span> {
+            <span class="kw">if</span> <span class="ident">MainWin</span>::<span class="ident">close_all</span>(<span class="kw-2">&amp;</span><span class="ident">main_win</span>) <span class="op">!=</span> <span class="ident">SaveAction</span>::<span class="ident">Cancel</span> {
+                <span class="ident">window</span>.<span class="ident">destroy</span>();
+                <span class="ident">Inhibit</span>(<span class="bool-val">false</span>)
+            } <span class="kw">else</span> {
+                <span class="ident">Inhibit</span>(<span class="bool-val">true</span>)
+            }
         }));
 
         {
@@ -1097,10 +1135,12 @@
             <span class="ident">application</span>.<span class="ident">add_action</span>(<span class="kw-2">&amp;</span><span class="ident">close_all_action</span>);
         }
         {
+            <span class="comment">// This is called when we run app.quit, e.g. via Ctrl+Q</span>
             <span class="kw">let</span> <span class="ident">quit_action</span> <span class="op">=</span> <span class="ident">SimpleAction</span>::<span class="ident">new</span>(<span class="string">&quot;quit&quot;</span>, <span class="prelude-val">None</span>);
             <span class="ident">quit_action</span>.<span class="ident">connect_activate</span>(<span class="macro">clone</span><span class="macro">!</span>(<span class="ident">main_win</span> <span class="op">=&gt;</span> <span class="kw">move</span> <span class="op">|</span><span class="kw">_</span>,<span class="kw">_</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">main_win</span> <span class="op">=</span> <span class="ident">main_win</span>.<span class="ident">borrow</span>();
-                <span class="ident">main_win</span>.<span class="ident">window</span>.<span class="ident">destroy</span>();
+                <span class="kw">if</span> <span class="ident">MainWin</span>::<span class="ident">close_all</span>(<span class="kw-2">&amp;</span><span class="ident">main_win</span>) <span class="op">!=</span> <span class="ident">SaveAction</span>::<span class="ident">Cancel</span> {
+                    <span class="ident">main_win</span>.<span class="ident">borrow</span>().<span class="ident">window</span>.<span class="ident">destroy</span>();
+                }
             }));
             <span class="ident">application</span>.<span class="ident">add_action</span>(<span class="kw-2">&amp;</span><span class="ident">quit_action</span>);
         }
@@ -1711,40 +1751,52 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">close_all</span>(<span class="ident">main_win</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">MainWin</span><span class="op">&gt;&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">close_all</span>(<span class="ident">main_win</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">MainWin</span><span class="op">&gt;&gt;</span>) <span class="op">-&gt;</span> <span class="ident">SaveAction</span> {
         <span class="kw">let</span> <span class="ident">edit_view</span> <span class="op">=</span> <span class="ident">main_win</span>.<span class="ident">borrow</span>().<span class="ident">get_current_edit_view</span>();
-        <span class="ident">MainWin</span>::<span class="ident">close_view</span>(<span class="kw-2">&amp;</span><span class="ident">main_win</span>, <span class="kw-2">&amp;</span><span class="ident">edit_view</span>);
+        <span class="ident">MainWin</span>::<span class="ident">close_view</span>(<span class="kw-2">&amp;</span><span class="ident">main_win</span>, <span class="kw-2">&amp;</span><span class="ident">edit_view</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">close</span>(<span class="ident">main_win</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">MainWin</span><span class="op">&gt;&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">close</span>(<span class="ident">main_win</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">MainWin</span><span class="op">&gt;&gt;</span>) <span class="op">-&gt;</span> <span class="ident">SaveAction</span> {
         <span class="kw">let</span> <span class="ident">edit_view</span> <span class="op">=</span> <span class="ident">main_win</span>.<span class="ident">borrow</span>().<span class="ident">get_current_edit_view</span>();
-        <span class="ident">MainWin</span>::<span class="ident">close_view</span>(<span class="kw-2">&amp;</span><span class="ident">main_win</span>, <span class="kw-2">&amp;</span><span class="ident">edit_view</span>);
+        <span class="ident">MainWin</span>::<span class="ident">close_view</span>(<span class="kw-2">&amp;</span><span class="ident">main_win</span>, <span class="kw-2">&amp;</span><span class="ident">edit_view</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">close_view</span>(<span class="ident">main_win</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">MainWin</span><span class="op">&gt;&gt;</span>, <span class="ident">edit_view</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">EditView</span><span class="op">&gt;&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">close_view</span>(
+        <span class="ident">main_win</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">MainWin</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">edit_view</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">EditView</span><span class="op">&gt;&gt;</span>,
+    ) <span class="op">-&gt;</span> <span class="ident">SaveAction</span> {
         <span class="kw">let</span> <span class="ident">pristine</span> <span class="op">=</span> <span class="ident">edit_view</span>.<span class="ident">borrow</span>().<span class="ident">pristine</span>;
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">pristine</span> {
+        <span class="kw">let</span> <span class="ident">save_action</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">pristine</span> {
             <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">Builder</span>::<span class="ident">new_from_string</span>(<span class="kw-2">&amp;</span><span class="ident">GLADE_SRC</span>);
             <span class="kw">let</span> <span class="ident">ask_save_dialog</span>: <span class="ident">Dialog</span> <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">get_object</span>(<span class="string">&quot;ask_save_dialog&quot;</span>).<span class="ident">unwrap</span>();
             <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ask_save_dialog</span>.<span class="ident">run</span>();
             <span class="ident">ask_save_dialog</span>.<span class="ident">destroy</span>();
             <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;AskSaveDialog response (1=save)&quot;</span>), <span class="ident">ret</span>);
             <span class="kw">match</span> <span class="ident">ret</span> {
-                <span class="number">1</span> <span class="op">=&gt;</span> <span class="ident">MainWin</span>::<span class="ident">save_as</span>(<span class="ident">main_win</span>, <span class="ident">edit_view</span>),
-                <span class="number">2</span> <span class="op">=&gt;</span> <span class="kw">return</span>,
-                <span class="kw">_</span> <span class="op">=&gt;</span> {}
-            };
-        }
-        <span class="kw">let</span> <span class="ident">view_id</span> <span class="op">=</span> <span class="ident">edit_view</span>.<span class="ident">borrow</span>().<span class="ident">view_id</span>.<span class="ident">clone</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">main_win</span> <span class="op">=</span> <span class="ident">main_win</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">w</span>) <span class="op">=</span> <span class="ident">main_win</span>.<span class="ident">view_id_to_w</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">view_id</span>).<span class="ident">map</span>(<span class="ident">Clone</span>::<span class="ident">clone</span>) {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">page_num</span>) <span class="op">=</span> <span class="ident">main_win</span>.<span class="ident">notebook</span>.<span class="ident">page_num</span>(<span class="kw-2">&amp;</span><span class="ident">w</span>) {
-                <span class="ident">main_win</span>.<span class="ident">notebook</span>.<span class="ident">remove_page</span>(<span class="prelude-val">Some</span>(<span class="ident">page_num</span>));
+                <span class="number">1</span> <span class="op">=&gt;</span> {<span class="ident">MainWin</span>::<span class="ident">save_as</span>(<span class="ident">main_win</span>, <span class="ident">edit_view</span>); <span class="ident">SaveAction</span>::<span class="ident">Save</span>},
+                <span class="number">2</span> <span class="op">=&gt;</span> <span class="ident">SaveAction</span>::<span class="ident">Cancel</span>,
+                <span class="number">3</span> <span class="op">=&gt;</span> <span class="ident">SaveAction</span>::<span class="ident">CloseWithoutSave</span>,
+                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">SaveAction</span>::<span class="ident">Cancel</span>
             }
-            <span class="ident">main_win</span>.<span class="ident">w_to_ev</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">w</span>.<span class="ident">clone</span>());
+        } <span class="kw">else</span> {
+            <span class="ident">SaveAction</span>::<span class="ident">CloseWithoutSave</span>
+        };
+
+        <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;SaveAction: {:?}&quot;</span>, <span class="ident">save_action</span>);
+
+        <span class="kw">if</span> <span class="ident">save_action</span> <span class="op">!=</span> <span class="ident">SaveAction</span>::<span class="ident">Cancel</span> {
+            <span class="kw">let</span> <span class="ident">view_id</span> <span class="op">=</span> <span class="ident">edit_view</span>.<span class="ident">borrow</span>().<span class="ident">view_id</span>.<span class="ident">clone</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">main_win</span> <span class="op">=</span> <span class="ident">main_win</span>.<span class="ident">borrow_mut</span>();
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">w</span>) <span class="op">=</span> <span class="ident">main_win</span>.<span class="ident">view_id_to_w</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">view_id</span>).<span class="ident">map</span>(<span class="ident">Clone</span>::<span class="ident">clone</span>) {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">page_num</span>) <span class="op">=</span> <span class="ident">main_win</span>.<span class="ident">notebook</span>.<span class="ident">page_num</span>(<span class="kw-2">&amp;</span><span class="ident">w</span>) {
+                    <span class="ident">main_win</span>.<span class="ident">notebook</span>.<span class="ident">remove_page</span>(<span class="prelude-val">Some</span>(<span class="ident">page_num</span>));
+                }
+                <span class="ident">main_win</span>.<span class="ident">w_to_ev</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">w</span>.<span class="ident">clone</span>());
+            }
+            <span class="ident">main_win</span>.<span class="ident">view_id_to_w</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">view_id</span>);
+            <span class="ident">main_win</span>.<span class="ident">core</span>.<span class="ident">borrow</span>().<span class="ident">close_view</span>(<span class="kw-2">&amp;</span><span class="ident">view_id</span>);
         }
-        <span class="ident">main_win</span>.<span class="ident">view_id_to_w</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">view_id</span>);
-        <span class="ident">main_win</span>.<span class="ident">core</span>.<span class="ident">borrow</span>().<span class="ident">close_view</span>(<span class="kw-2">&amp;</span><span class="ident">view_id</span>);
+        <span class="ident">save_action</span>
     }
 }
 </pre></div>
