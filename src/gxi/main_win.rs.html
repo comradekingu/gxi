@@ -1507,7 +1507,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">plugin_started</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>) {}
+    <span class="kw">fn</span> <span class="ident">plugin_started</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_params</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>) {}
 
     <span class="kw">fn</span> <span class="ident">plugin_stopped</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>) {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">plugin</span>) <span class="op">=</span> <span class="ident">params</span>[<span class="string">&quot;plugin&quot;</span>].<span class="ident">as_str</span>() {
