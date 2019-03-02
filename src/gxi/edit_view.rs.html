@@ -1324,31 +1324,6 @@
 <span id="1324">1324</span>
 <span id="1325">1325</span>
 <span id="1326">1326</span>
-<span id="1327">1327</span>
-<span id="1328">1328</span>
-<span id="1329">1329</span>
-<span id="1330">1330</span>
-<span id="1331">1331</span>
-<span id="1332">1332</span>
-<span id="1333">1333</span>
-<span id="1334">1334</span>
-<span id="1335">1335</span>
-<span id="1336">1336</span>
-<span id="1337">1337</span>
-<span id="1338">1338</span>
-<span id="1339">1339</span>
-<span id="1340">1340</span>
-<span id="1341">1341</span>
-<span id="1342">1342</span>
-<span id="1343">1343</span>
-<span id="1344">1344</span>
-<span id="1345">1345</span>
-<span id="1346">1346</span>
-<span id="1347">1347</span>
-<span id="1348">1348</span>
-<span id="1349">1349</span>
-<span id="1350">1350</span>
-<span id="1351">1351</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">linecache</span>::{<span class="ident">Line</span>, <span class="ident">LineCache</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">main_win</span>::<span class="ident">MainState</span>;
@@ -1369,15 +1344,16 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">u32</span>;
 
-<span class="doccomment">/// The EvReplace struct holds the find+replace elements of the EditView.</span>
+<span class="doccomment">/// The `EVReplace` struct holds the find+replace elements of the EditView.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EVReplace</span> {
     <span class="ident">replace_expander</span>: <span class="ident">Expander</span>,
     <span class="ident">replace_revealer</span>: <span class="ident">Revealer</span>,
     <span class="ident">replace_entry</span>: <span class="ident">Entry</span>,
 }
 
-<span class="doccomment">/// The EvFont struct holds all information about the font used in the EditView.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EVFont</span> {
+<span class="doccomment">/// The `Font` Struct holds all information about the font used in the `EditView` for the editing area</span>
+<span class="doccomment">/// or the interface font (used for the linecount)</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Font</span> {
     <span class="ident">font_height</span>: <span class="ident">f64</span>,
     <span class="ident">font_width</span>: <span class="ident">f64</span>,
     <span class="ident">font_ascent</span>: <span class="ident">f64</span>,
@@ -1385,12 +1361,46 @@
     <span class="ident">font_desc</span>: <span class="ident">FontDescription</span>,
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EVInterfaceFont</span> {
-    <span class="ident">font_height</span>: <span class="ident">f64</span>,
-    <span class="ident">font_width</span>: <span class="ident">f64</span>,
-    <span class="ident">font_ascent</span>: <span class="ident">f64</span>,
-    <span class="ident">font_descent</span>: <span class="ident">f64</span>,
-    <span class="ident">font_desc</span>: <span class="ident">FontDescription</span>,
+<span class="kw">impl</span> <span class="ident">Font</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">pango_ctx</span>: <span class="ident">pango</span>::<span class="ident">Context</span>, <span class="ident">font_desc</span>: <span class="ident">FontDescription</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">pango_ctx</span>.<span class="ident">set_font_description</span>(<span class="kw-2">&amp;</span><span class="ident">font_desc</span>);
+        <span class="kw">let</span> <span class="ident">language</span> <span class="op">=</span> <span class="ident">pango_ctx</span>
+            .<span class="ident">get_language</span>()
+            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">gettext</span>(<span class="string">&quot;Failed to get Pango language&quot;</span>)));
+        <span class="kw">let</span> <span class="ident">fontset</span> <span class="op">=</span> <span class="ident">pango_ctx</span>
+            .<span class="ident">load_fontset</span>(<span class="kw-2">&amp;</span><span class="ident">font_desc</span>, <span class="kw-2">&amp;</span><span class="ident">language</span>)
+            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">gettext</span>(<span class="string">&quot;Failed to load Pango font set&quot;</span>)));
+        <span class="kw">let</span> <span class="ident">metrics</span> <span class="op">=</span> <span class="ident">fontset</span>
+            .<span class="ident">get_metrics</span>()
+            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">gettext</span>(<span class="string">&quot;Failed to load Pango font metrics&quot;</span>)));
+
+        <span class="kw">let</span> <span class="ident">layout</span> <span class="op">=</span> <span class="ident">pango</span>::<span class="ident">Layout</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">pango_ctx</span>);
+        <span class="ident">layout</span>.<span class="ident">set_text</span>(<span class="string">&quot;a&quot;</span>);
+        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">log_extents</span>) <span class="op">=</span> <span class="ident">layout</span>.<span class="ident">get_extents</span>();
+        <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;{}: {:?}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;Pango font size&quot;</span>), <span class="ident">log_extents</span>);
+
+        <span class="kw">let</span> <span class="ident">font_height</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">log_extents</span>.<span class="ident">height</span>) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
+        <span class="kw">let</span> <span class="ident">font_width</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">log_extents</span>.<span class="ident">width</span>) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
+        <span class="kw">let</span> <span class="ident">font_ascent</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">metrics</span>.<span class="ident">get_ascent</span>()) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
+        <span class="kw">let</span> <span class="ident">font_descent</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">metrics</span>.<span class="ident">get_descent</span>()) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
+
+        <span class="macro">debug</span><span class="macro">!</span>(
+            <span class="string">&quot;{}: {} {} {} {}&quot;</span>,
+            <span class="ident">gettext</span>(<span class="string">&quot;Font metrics&quot;</span>),
+            <span class="ident">font_width</span>,
+            <span class="ident">font_height</span>,
+            <span class="ident">font_ascent</span>,
+            <span class="ident">font_descent</span>
+        );
+
+        <span class="self">Self</span> {
+            <span class="ident">font_height</span>,
+            <span class="ident">font_width</span>,
+            <span class="ident">font_ascent</span>,
+            <span class="ident">font_descent</span>,
+            <span class="ident">font_desc</span>,
+        }
+    }
 }
 
 <span class="doccomment">/// The EditView is the part of gxi that does the actual editing. This is where you edit documents.</span>
@@ -1413,8 +1423,8 @@
     <span class="ident">vscrollbar</span>: <span class="ident">Scrollbar</span>,
     <span class="ident">line_cache</span>: <span class="ident">LineCache</span>,
     <span class="ident">replace</span>: <span class="ident">EVReplace</span>,
-    <span class="ident">edit_font</span>: <span class="ident">EVFont</span>,
-    <span class="ident">interface_font</span>: <span class="ident">EVInterfaceFont</span>,
+    <span class="ident">edit_font</span>: <span class="ident">Font</span>,
+    <span class="ident">interface_font</span>: <span class="ident">Font</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">EditView</span> {
@@ -1425,7 +1435,7 @@
         <span class="ident">core</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Core</span><span class="op">&gt;&gt;</span>,
         <span class="ident">file_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
         <span class="ident">view_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">EditView</span><span class="op">&gt;&gt;</span> {
+    ) <span class="op">-&gt;</span> <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;&gt;</span> {
         <span class="kw">let</span> <span class="ident">da</span> <span class="op">=</span> <span class="ident">DrawingArea</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">linecount_da</span> <span class="op">=</span> <span class="ident">DrawingArea</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">hscrollbar</span> <span class="op">=</span> <span class="ident">Scrollbar</span>::<span class="ident">new</span>(<span class="ident">Orientation</span>::<span class="ident">Horizontal</span>, <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">gtk</span>::<span class="ident">Adjustment</span><span class="op">&gt;</span>);
@@ -1494,95 +1504,20 @@
             .<span class="ident">collect</span>();
         <span class="ident">main_state</span>.<span class="ident">borrow_mut</span>().<span class="ident">fonts</span> <span class="op">=</span> <span class="ident">font_list</span>;
 
-        <span class="kw">let</span> <span class="ident">font_desc</span> <span class="op">=</span> <span class="ident">FontDescription</span>::<span class="ident">from_string</span>(<span class="string">&quot;Inconsolata 16&quot;</span>);
-        <span class="comment">// font_desc.set_size(14 * pango::SCALE);</span>
-        <span class="ident">pango_ctx</span>.<span class="ident">set_font_description</span>(<span class="kw-2">&amp;</span><span class="ident">font_desc</span>);
-        <span class="kw">let</span> <span class="ident">language</span> <span class="op">=</span> <span class="ident">pango_ctx</span>
-            .<span class="ident">get_language</span>()
-            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">gettext</span>(<span class="string">&quot;Failed to get Pango language&quot;</span>)));
-        <span class="kw">let</span> <span class="ident">fontset</span> <span class="op">=</span> <span class="ident">pango_ctx</span>
-            .<span class="ident">load_fontset</span>(<span class="kw-2">&amp;</span><span class="ident">font_desc</span>, <span class="kw-2">&amp;</span><span class="ident">language</span>)
-            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">gettext</span>(<span class="string">&quot;Failed to load Pango font set&quot;</span>)));
-        <span class="kw">let</span> <span class="ident">metrics</span> <span class="op">=</span> <span class="ident">fontset</span>
-            .<span class="ident">get_metrics</span>()
-            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">gettext</span>(<span class="string">&quot;Failed to load Pango font metrics&quot;</span>)));
+        <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">main_state</span>.<span class="ident">borrow</span>().<span class="ident">config</span>;
 
-        <span class="comment">// cr.select_font_face(&quot;Inconsolata&quot;, ::cairo::enums::FontSlant::Normal, ::cairo::enums::FontWeight::Normal);</span>
-        <span class="comment">// cr.set_font_size(16.0);</span>
-        <span class="comment">// let font_extents = cr.font_extents();</span>
-
-        <span class="kw">let</span> <span class="ident">layout</span> <span class="op">=</span> <span class="ident">pango</span>::<span class="ident">Layout</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">pango_ctx</span>);
-        <span class="ident">layout</span>.<span class="ident">set_text</span>(<span class="string">&quot;a&quot;</span>);
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">log_extents</span>) <span class="op">=</span> <span class="ident">layout</span>.<span class="ident">get_extents</span>();
-        <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;{}: {:?}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;Pango edit font size&quot;</span>), <span class="ident">log_extents</span>);
-
-        <span class="kw">let</span> <span class="ident">font_height</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">log_extents</span>.<span class="ident">height</span>) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
-        <span class="kw">let</span> <span class="ident">font_width</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">log_extents</span>.<span class="ident">width</span>) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
-        <span class="kw">let</span> <span class="ident">font_ascent</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">metrics</span>.<span class="ident">get_ascent</span>()) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
-        <span class="kw">let</span> <span class="ident">font_descent</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">metrics</span>.<span class="ident">get_descent</span>()) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
-
-        <span class="macro">debug</span><span class="macro">!</span>(
-            <span class="string">&quot;{}: {} {} {} {}&quot;</span>,
-            <span class="ident">gettext</span>(<span class="string">&quot;Edit font metrics&quot;</span>),
-            <span class="ident">font_width</span>,
-            <span class="ident">font_height</span>,
-            <span class="ident">font_ascent</span>,
-            <span class="ident">font_descent</span>
+        <span class="kw">let</span> <span class="ident">edit_font</span> <span class="op">=</span> <span class="ident">Font</span>::<span class="ident">new</span>(
+            <span class="ident">pango_ctx</span>.<span class="ident">clone</span>(),
+            <span class="ident">FontDescription</span>::<span class="ident">from_string</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(
+                <span class="string">&quot;{} {}&quot;</span>,
+                <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">borrow</span>().<span class="ident">config</span>.<span class="ident">font_face</span>,
+                <span class="kw-2">&amp;</span><span class="ident">config</span>.<span class="ident">borrow</span>().<span class="ident">config</span>.<span class="ident">font_size</span>
+            )),
         );
-
-        <span class="comment">// The font used for editing</span>
-        <span class="kw">let</span> <span class="ident">edit_font</span> <span class="op">=</span> <span class="ident">EVFont</span> {
-            <span class="ident">font_height</span>,
-            <span class="ident">font_width</span>,
-            <span class="ident">font_ascent</span>,
-            <span class="ident">font_descent</span>,
-            <span class="ident">font_desc</span>,
-        };
-
-        <span class="kw">let</span> <span class="ident">interface_font</span> <span class="op">=</span> <span class="ident">FontDescription</span>::<span class="ident">from_string</span>(<span class="kw-2">&amp;</span><span class="ident">get_default_interface_font_schema</span>());
-
-        <span class="ident">pango_ctx</span>.<span class="ident">set_font_description</span>(<span class="kw-2">&amp;</span><span class="ident">interface_font</span>);
-        <span class="kw">let</span> <span class="ident">if_language</span> <span class="op">=</span> <span class="ident">pango_ctx</span>
-            .<span class="ident">get_language</span>()
-            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">gettext</span>(<span class="string">&quot;Failed to get Pango language&quot;</span>)));
-        <span class="kw">let</span> <span class="ident">if_fontset</span> <span class="op">=</span> <span class="ident">pango_ctx</span>
-            .<span class="ident">load_fontset</span>(<span class="kw-2">&amp;</span><span class="ident">interface_font</span>, <span class="kw-2">&amp;</span><span class="ident">if_language</span>)
-            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">gettext</span>(<span class="string">&quot;Failed to load Pango font set&quot;</span>)));
-        <span class="kw">let</span> <span class="ident">if_metrics</span> <span class="op">=</span> <span class="ident">if_fontset</span>
-            .<span class="ident">get_metrics</span>()
-            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">gettext</span>(<span class="string">&quot;Failed to load Pango font metrics&quot;</span>)));
-
-        <span class="kw">let</span> <span class="ident">if_layout</span> <span class="op">=</span> <span class="ident">pango</span>::<span class="ident">Layout</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">pango_ctx</span>);
-        <span class="ident">if_layout</span>.<span class="ident">set_text</span>(<span class="string">&quot;a&quot;</span>);
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">if_log_extents</span>) <span class="op">=</span> <span class="ident">layout</span>.<span class="ident">get_extents</span>();
-        <span class="macro">debug</span><span class="macro">!</span>(
-            <span class="string">&quot;{}: {:?}&quot;</span>,
-            <span class="ident">gettext</span>(<span class="string">&quot;Pango interface font size&quot;</span>),
-            <span class="ident">log_extents</span>
+        <span class="kw">let</span> <span class="ident">interface_font</span> <span class="op">=</span> <span class="ident">Font</span>::<span class="ident">new</span>(
+            <span class="ident">pango_ctx</span>,
+            <span class="ident">FontDescription</span>::<span class="ident">from_string</span>(<span class="kw-2">&amp;</span><span class="ident">get_default_interface_font_schema</span>()),
         );
-
-        <span class="kw">let</span> <span class="ident">interface_font_height</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">if_log_extents</span>.<span class="ident">height</span>) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
-        <span class="kw">let</span> <span class="ident">interface_font_width</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">if_log_extents</span>.<span class="ident">width</span>) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
-        <span class="kw">let</span> <span class="ident">interface_font_ascent</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">if_metrics</span>.<span class="ident">get_ascent</span>()) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
-        <span class="kw">let</span> <span class="ident">interface_font_descent</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">if_metrics</span>.<span class="ident">get_descent</span>()) <span class="op">/</span> <span class="ident">f64</span>::<span class="ident">from</span>(<span class="ident">pango</span>::<span class="ident">SCALE</span>);
-
-        <span class="macro">debug</span><span class="macro">!</span>(
-            <span class="string">&quot;{}: {} {} {} {}&quot;</span>,
-            <span class="ident">gettext</span>(<span class="string">&quot;Interface font metrics&quot;</span>),
-            <span class="ident">interface_font_width</span>,
-            <span class="ident">interface_font_height</span>,
-            <span class="ident">interface_font_ascent</span>,
-            <span class="ident">interface_font_descent</span>
-        );
-
-        <span class="comment">// The font used for the interface (the linecount)</span>
-        <span class="kw">let</span> <span class="ident">interface_font</span> <span class="op">=</span> <span class="ident">EVInterfaceFont</span> {
-            <span class="ident">font_height</span>: <span class="ident">interface_font_height</span>,
-            <span class="ident">font_width</span>: <span class="ident">interface_font_width</span>,
-            <span class="ident">font_ascent</span>: <span class="ident">interface_font_ascent</span>,
-            <span class="ident">font_descent</span>: <span class="ident">interface_font_descent</span>,
-            <span class="ident">font_desc</span>: <span class="ident">interface_font</span>,
-        };
 
         <span class="kw">let</span> <span class="ident">edit_view</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">RefCell</span>::<span class="ident">new</span>(<span class="ident">EditView</span> {
             <span class="ident">core</span>: <span class="ident">core</span>.<span class="ident">clone</span>(),
@@ -1754,16 +1689,31 @@
                 <span class="kw">match</span> <span class="ident">name</span>.<span class="ident">as_ref</span>() {
                     <span class="string">&quot;font_size&quot;</span> <span class="op">=&gt;</span> {
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">font_size</span>) <span class="op">=</span> <span class="ident">value</span>.<span class="ident">as_u64</span>() {
+                            <span class="kw">let</span> <span class="ident">pango_ctx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">da</span>.<span class="ident">get_pango_context</span>().<span class="ident">unwrap_or_else</span>(<span class="op">||</span> {
+                                <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">gettext</span>(<span class="string">&quot;Failed to get Pango context&quot;</span>))
+                            });
                             <span class="self">self</span>.<span class="ident">edit_font</span>
                                 .<span class="ident">font_desc</span>
                                 .<span class="ident">set_size</span>(<span class="ident">font_size</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">*</span> <span class="ident">pango</span>::<span class="ident">SCALE</span>);
+                            <span class="comment">// We&#39;ve set the new fontsize previously, now we have to regenerate the font height/width etc.</span>
+                            <span class="self">self</span>.<span class="ident">edit_font</span> <span class="op">=</span> <span class="ident">Font</span>::<span class="ident">new</span>(<span class="ident">pango_ctx</span>, <span class="self">self</span>.<span class="ident">edit_font</span>.<span class="ident">font_desc</span>.<span class="ident">clone</span>());
                             <span class="self">self</span>.<span class="ident">da</span>.<span class="ident">queue_draw</span>();
                         }
                     }
                     <span class="string">&quot;font_face&quot;</span> <span class="op">=&gt;</span> {
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">font_face</span>) <span class="op">=</span> <span class="ident">value</span>.<span class="ident">as_str</span>() {
-                            <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;Setting font to&quot;</span>), <span class="ident">font_face</span>);
-                            <span class="self">self</span>.<span class="ident">edit_font</span>.<span class="ident">font_desc</span>.<span class="ident">set_family</span>(<span class="ident">font_face</span>);
+                            <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;Setting edit font to&quot;</span>), <span class="ident">font_face</span>);
+                            <span class="kw">let</span> <span class="ident">pango_ctx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">da</span>.<span class="ident">get_pango_context</span>().<span class="ident">unwrap_or_else</span>(<span class="op">||</span> {
+                                <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">gettext</span>(<span class="string">&quot;Failed to get Pango context&quot;</span>))
+                            });
+                            <span class="self">self</span>.<span class="ident">edit_font</span> <span class="op">=</span> <span class="ident">Font</span>::<span class="ident">new</span>(
+                                <span class="ident">pango_ctx</span>,
+                                <span class="ident">FontDescription</span>::<span class="ident">from_string</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(
+                                    <span class="string">&quot;{} {}&quot;</span>,
+                                    <span class="ident">font_face</span>,
+                                    <span class="self">self</span>.<span class="ident">edit_font</span>.<span class="ident">font_desc</span>.<span class="ident">get_size</span>() <span class="op">/</span> <span class="ident">pango</span>::<span class="ident">SCALE</span>
+                                )),
+                            );
                             <span class="self">self</span>.<span class="ident">da</span>.<span class="ident">queue_draw</span>();
                         }
                     }
@@ -1811,7 +1761,7 @@
         <span class="comment">// update scrollbars to the new text width and height</span>
         <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">text_height</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_text_size</span>();
         <span class="kw">let</span> <span class="ident">vadj</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">vscrollbar</span>.<span class="ident">get_adjustment</span>();
-        <span class="ident">vadj</span>.<span class="ident">set_lower</span>(<span class="number">0f64</span>);
+        <span class="ident">vadj</span>.<span class="ident">set_lower</span>(<span class="number">0_f64</span>);
         <span class="ident">vadj</span>.<span class="ident">set_upper</span>(<span class="ident">text_height</span> <span class="kw">as</span> <span class="ident">f64</span>);
         <span class="kw">if</span> <span class="ident">vadj</span>.<span class="ident">get_value</span>() <span class="op">+</span> <span class="ident">vadj</span>.<span class="ident">get_page_size</span>() <span class="op">&gt;</span> <span class="ident">vadj</span>.<span class="ident">get_upper</span>() {
             <span class="ident">vadj</span>.<span class="ident">set_value</span>(<span class="ident">vadj</span>.<span class="ident">get_upper</span>() <span class="op">-</span> <span class="ident">vadj</span>.<span class="ident">get_page_size</span>())
@@ -1966,6 +1916,8 @@
     <span class="doccomment">/// Handles the drawing of the EditView. This is called when we get a update from xi-editor or if</span>
     <span class="doccomment">/// gtk requests us to draw the EditView. This draws the background, all lines and the cursor.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">handle_da_draw</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cr</span>: <span class="kw-2">&amp;</span><span class="ident">Context</span>) <span class="op">-&gt;</span> <span class="ident">Inhibit</span> {
+        <span class="kw">const</span> <span class="ident">CURSOR_WIDTH</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">2.0</span>;
+
         <span class="comment">// let foreground = self.main_state.borrow().theme.foreground;</span>
         <span class="kw">let</span> <span class="ident">theme</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">main_state</span>.<span class="ident">borrow</span>().<span class="ident">theme</span>;
 
@@ -2024,8 +1976,6 @@
         <span class="comment">//         }</span>
         <span class="comment">//     }</span>
         <span class="comment">// }</span>
-
-        <span class="kw">const</span> <span class="ident">CURSOR_WIDTH</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">2.0</span>;
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">max_width</span> <span class="op">=</span> <span class="number">0</span>;
 
@@ -2210,7 +2160,7 @@
                 <span class="ident">start</span>: <span class="number">0</span>,
                 <span class="ident">end</span>: <span class="ident">spaces</span>.<span class="ident">len</span>(),
             };
-            <span class="kw">let</span> <span class="ident">highlighted_spaces</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">space_range</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;·&quot;</span>).<span class="ident">collect</span>();
+            <span class="kw">let</span> <span class="ident">highlighted_spaces</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">space_range</span>.<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;·&quot;</span>).<span class="ident">collect</span>();
 
             <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">line_view_without_space</span>, <span class="ident">highlighted_spaces</span>)
         } <span class="kw">else</span> {
@@ -2400,13 +2350,13 @@
         <span class="kw">let</span> <span class="ident">hadj</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">hscrollbar</span>.<span class="ident">get_adjustment</span>();
         <span class="kw">match</span> <span class="ident">es</span>.<span class="ident">get_direction</span>() {
             <span class="ident">ScrollDirection</span>::<span class="ident">Smooth</span> <span class="op">=&gt;</span> {
-                <span class="kw">let</span> (<span class="ident">scroll_change_hori</span>, <span class="ident">scroll_change_vert</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">es</span>.<span class="ident">get_scroll_deltas</span>() {
-                    <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">v</span>,
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
+                <span class="kw">let</span> (<span class="ident">scroll_change_hori</span>, <span class="ident">scroll_change_vert</span>) <span class="op">=</span>
+                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span> <span class="ident">es</span>.<span class="ident">get_scroll_deltas</span>() {
+                        <span class="ident">v</span>
+                    } <span class="kw">else</span> {
                         <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;Smooth scrolling failed&quot;</span>));
                         (<span class="number">0.0</span>, <span class="number">0.0</span>)
-                    }
-                };
+                    };
 
                 <span class="ident">vadj</span>.<span class="ident">set_value</span>(<span class="ident">vadj</span>.<span class="ident">get_value</span>() <span class="op">+</span> (<span class="ident">scroll_change_vert</span> <span class="op">*</span> <span class="ident">amt</span>));
                 <span class="ident">hadj</span>.<span class="ident">set_value</span>(<span class="ident">hadj</span>.<span class="ident">get_value</span>() <span class="op">+</span> (<span class="ident">scroll_change_hori</span> <span class="op">*</span> <span class="ident">amt</span>));

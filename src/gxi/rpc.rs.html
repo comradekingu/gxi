@@ -581,13 +581,13 @@
         <span class="ident">xi_rx</span>: <span class="ident">Receiver</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">err_tx</span>: <span class="ident">glib</span>::<span class="ident">Sender</span><span class="op">&lt;</span><span class="ident">ErrMsg</span><span class="op">&gt;</span>,
         <span class="ident">shared_queue</span>: <span class="ident">SharedQueue</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">Core</span> {
+    ) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">CoreState</span> {
             <span class="ident">xi_peer</span>,
             <span class="ident">id</span>: <span class="number">0</span>,
             <span class="ident">pending</span>: <span class="ident">BTreeMap</span>::<span class="ident">new</span>(),
         };
-        <span class="kw">let</span> <span class="ident">core</span> <span class="op">=</span> <span class="ident">Core</span> {
+        <span class="kw">let</span> <span class="ident">core</span> <span class="op">=</span> <span class="self">Self</span> {
             <span class="ident">state</span>: <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">Mutex</span>::<span class="ident">new</span>(<span class="ident">state</span>)),
         };
 

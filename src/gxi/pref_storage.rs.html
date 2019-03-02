@@ -271,6 +271,12 @@
 <span id="271">271</span>
 <span id="272">272</span>
 <span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="ident">Error</span>;
 <span class="kw">use</span> <span class="ident">gettextrs</span>::<span class="ident">gettext</span>;
@@ -281,7 +287,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">tempfile</span>::<span class="ident">tempdir</span>;
 
-<span class="doccomment">/// Generic wrapper struct around XiConfig</span>
+<span class="doccomment">/// Wrapper struct around `XiConfig`, it&#39;s annoying to pass around path otherwise</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Config</span> {
     <span class="kw">pub</span> <span class="ident">path</span>: <span class="ident">String</span>,
@@ -309,7 +315,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">XiConfig</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="ident">XiConfig</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
         <span class="kw">const</span> <span class="ident">LINE_ENDING</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;\r\n&quot;</span>;
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
@@ -323,7 +329,7 @@
         ];
 
         <span class="comment">// Default valuess as dictated by https://github.com/xi-editor/xi-editor/blob/master/rust/core-lib/assets/client_example.toml</span>
-        <span class="ident">XiConfig</span> {
+        <span class="self">Self</span> {
             <span class="ident">tab_size</span>: <span class="number">4</span>,
             <span class="ident">translate_tabs_to_spaces</span>: <span class="bool-val">false</span>,
             <span class="ident">use_tab_stops</span>: <span class="bool-val">true</span>,
@@ -343,8 +349,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Config</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">Config</span> {
-        <span class="kw">let</span> <span class="ident">xi_config</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">user_config_dir</span>) <span class="op">=</span> <span class="ident">dirs</span>::<span class="ident">config_dir</span>() {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">user_config_dir</span>) <span class="op">=</span> <span class="ident">dirs</span>::<span class="ident">config_dir</span>() {
             <span class="kw">let</span> <span class="ident">config_dir</span> <span class="op">=</span> <span class="ident">user_config_dir</span>.<span class="ident">join</span>(<span class="string">&quot;gxi&quot;</span>);
             <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">create_dir_all</span>(<span class="kw-2">&amp;</span><span class="ident">config_dir</span>)
                 .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
@@ -356,7 +362,7 @@
                 })
                 .<span class="ident">unwrap</span>();
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">xi_config</span> <span class="op">=</span> <span class="ident">Config</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">xi_config</span> <span class="op">=</span> <span class="self">Self</span> {
                 <span class="ident">config</span>: <span class="ident">XiConfig</span>::<span class="ident">default</span>(),
                 <span class="ident">path</span>: <span class="ident">config_dir</span>
                     .<span class="ident">join</span>(<span class="string">&quot;preferences.xiconfig&quot;</span>)
@@ -375,7 +381,7 @@
                     .<span class="ident">save</span>()
                     .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>.<span class="ident">to_string</span>()));
 
-                <span class="ident">Config</span> {
+                <span class="self">Self</span> {
                     <span class="ident">path</span>: <span class="ident">xi_config</span>.<span class="ident">path</span>.<span class="ident">to_string</span>(),
                     <span class="ident">config</span>: <span class="ident">XiConfig</span> {
                         <span class="ident">tab_size</span>: <span class="ident">xi_config</span>.<span class="ident">config</span>.<span class="ident">tab_size</span>,
@@ -438,12 +444,10 @@
                 .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>.<span class="ident">to_string</span>()));
 
             <span class="ident">xi_config</span>
-        };
-
-        <span class="ident">xi_config</span>
+        }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Config</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;Opening config file&quot;</span>));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">config_file</span> <span class="op">=</span> <span class="ident">OpenOptions</span>::<span class="ident">new</span>().<span class="ident">read</span>(<span class="bool-val">true</span>).<span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">path</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">config_string</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
@@ -492,8 +496,9 @@
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_theme_schema</span>(<span class="ident">theme_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span> <span class="ident">SettingsSchemaSource</span>::<span class="ident">get_default</span>()
+    <span class="kw">if</span> <span class="ident">SettingsSchemaSource</span>::<span class="ident">get_default</span>()
         .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">settings_source</span><span class="op">|</span> <span class="ident">settings_source</span>.<span class="ident">lookup</span>(<span class="string">&quot;com.github.Cogitri.gxi&quot;</span>, <span class="bool-val">true</span>))
+        .<span class="ident">is_some</span>()
     {
         <span class="ident">Settings</span>::<span class="ident">new</span>(<span class="kw">crate</span>::<span class="ident">globals</span>::<span class="ident">APP_ID</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;com.github.Cogitri.gxi&quot;</span>))
             .<span class="ident">set_string</span>(<span class="string">&quot;theme-name&quot;</span>, <span class="ident">theme_name</span>);
@@ -506,40 +511,47 @@
         .<span class="ident">and_then</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
             <span class="ident">Settings</span>::<span class="ident">new</span>(<span class="string">&quot;org.gnome.desktop.interface&quot;</span>).<span class="ident">get_string</span>(<span class="string">&quot;monospace-font-name&quot;</span>)
         })
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>())
-        .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> {
-            <span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Couldn&#39;t find GSchema! Defaulting to default monospace font.&quot;</span>);
-            <span class="string">&quot;Monospace&quot;</span>.<span class="ident">to_string</span>()
-        })
+        .<span class="ident">map_or_else</span>(
+            <span class="op">||</span> {
+                <span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Couldn&#39;t find GSchema! Defaulting to default monospace font.&quot;</span>);
+                <span class="string">&quot;Monospace&quot;</span>.<span class="ident">to_string</span>()
+            },
+            <span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>(),
+        )
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_default_interface_font_schema</span>() <span class="op">-&gt;</span> <span class="ident">String</span> {
     <span class="ident">SettingsSchemaSource</span>::<span class="ident">get_default</span>()
         .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">settings_source</span><span class="op">|</span> <span class="ident">settings_source</span>.<span class="ident">lookup</span>(<span class="string">&quot;org.gnome.desktop.interface&quot;</span>, <span class="bool-val">true</span>))
         .<span class="ident">and_then</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Settings</span>::<span class="ident">new</span>(<span class="string">&quot;org.gnome.desktop.interface&quot;</span>).<span class="ident">get_string</span>(<span class="string">&quot;font-name&quot;</span>))
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>())
-        .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> {
-            <span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Couldn&#39;t find GSchema! Defaulting to default interface font.&quot;</span>);
-            <span class="string">&quot;Cantarell 11&quot;</span>.<span class="ident">to_string</span>()
-        })
+        .<span class="ident">map_or_else</span>(
+            <span class="op">||</span> {
+                <span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Couldn&#39;t find GSchema! Defaulting to default interface font.&quot;</span>);
+                <span class="string">&quot;Cantarell 11&quot;</span>.<span class="ident">to_string</span>()
+            },
+            <span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>(),
+        )
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_draw_trailing_spaces_schema</span>() <span class="op">-&gt;</span> <span class="ident">bool</span> {
     <span class="ident">SettingsSchemaSource</span>::<span class="ident">get_default</span>()
         .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">settings_source</span><span class="op">|</span> <span class="ident">settings_source</span>.<span class="ident">lookup</span>(<span class="string">&quot;com.github.Cogitri.gxi&quot;</span>, <span class="bool-val">true</span>))
-        .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
-            <span class="ident">Settings</span>::<span class="ident">new</span>(<span class="kw">crate</span>::<span class="ident">globals</span>::<span class="ident">APP_ID</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;com.github.Cogitri.gxi&quot;</span>))
-                .<span class="ident">get_boolean</span>(<span class="string">&quot;draw-trailing-spaces&quot;</span>)
-        })
-        .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> {
-            <span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Couldn&#39;t find GSchema! Defaulting to not drawing tabs!&quot;</span>);
-            <span class="bool-val">false</span>
-        })
+        .<span class="ident">map_or_else</span>(
+            <span class="op">||</span> {
+                <span class="macro">warn</span><span class="macro">!</span>(<span class="string">&quot;Couldn&#39;t find GSchema! Defaulting to not drawing tabs!&quot;</span>);
+                <span class="bool-val">false</span>
+            },
+            <span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
+                <span class="ident">Settings</span>::<span class="ident">new</span>(<span class="kw">crate</span>::<span class="ident">globals</span>::<span class="ident">APP_ID</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;com.github.Cogitri.gxi&quot;</span>))
+                    .<span class="ident">get_boolean</span>(<span class="string">&quot;draw-trailing-spaces&quot;</span>)
+            },
+        )
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_draw_trailing_spaces_schema</span>(<span class="ident">val</span>: <span class="ident">bool</span>) {
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span> <span class="ident">SettingsSchemaSource</span>::<span class="ident">get_default</span>()
+    <span class="kw">if</span> <span class="ident">SettingsSchemaSource</span>::<span class="ident">get_default</span>()
         .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">settings_source</span><span class="op">|</span> <span class="ident">settings_source</span>.<span class="ident">lookup</span>(<span class="string">&quot;com.github.Cogitri.gxi&quot;</span>, <span class="bool-val">true</span>))
+        .<span class="ident">is_some</span>()
     {
         <span class="ident">Settings</span>::<span class="ident">new</span>(<span class="kw">crate</span>::<span class="ident">globals</span>::<span class="ident">APP_ID</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;com.github.Cogitri.gxi&quot;</span>))
             .<span class="ident">set_boolean</span>(<span class="string">&quot;draw-trailing-spaces&quot;</span>, <span class="ident">val</span>);

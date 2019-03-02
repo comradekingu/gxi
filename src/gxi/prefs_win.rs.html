@@ -160,19 +160,6 @@
 <span id="160">160</span>
 <span id="161">161</span>
 <span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
-<span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
-<span id="174">174</span>
-<span id="175">175</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">main_win</span>::<span class="ident">MainState</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">pref_storage</span>::<span class="kw-2">*</span>;
@@ -183,7 +170,6 @@
 <span class="kw">use</span> <span class="ident">pango</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrefsWin</span> {
     <span class="ident">core</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Core</span><span class="op">&gt;&gt;</span>,
@@ -195,8 +181,7 @@
         <span class="ident">parent</span>: <span class="kw-2">&amp;</span><span class="ident">ApplicationWindow</span>,
         <span class="ident">main_state</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">MainState</span><span class="op">&gt;&gt;</span>,
         <span class="ident">core</span>: <span class="kw-2">&amp;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Core</span><span class="op">&gt;&gt;</span>,
-        <span class="ident">xi_config</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">Config</span><span class="op">&gt;&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">PrefsWin</span><span class="op">&gt;&gt;</span> {
+    ) <span class="op">-&gt;</span> <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;&gt;</span> {
         <span class="kw">let</span> <span class="ident">glade_src</span> <span class="op">=</span> <span class="macro">include_str</span><span class="macro">!</span>(<span class="string">&quot;ui/prefs_win.glade&quot;</span>);
         <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">Builder</span>::<span class="ident">new_from_string</span>(<span class="ident">glade_src</span>);
 
@@ -214,18 +199,15 @@
             .<span class="ident">get_object</span>(<span class="string">&quot;draw_trailing_spaces_checkbutton&quot;</span>)
             .<span class="ident">unwrap</span>();
 
+        <span class="kw">let</span> <span class="ident">xi_config</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">main_state</span>.<span class="ident">borrow</span>().<span class="ident">config</span>;
+
         {
-            <span class="kw">let</span> <span class="ident">conf</span> <span class="op">=</span> <span class="ident">xi_config</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">font_desc</span> <span class="op">=</span> <span class="ident">FontDescription</span>::<span class="ident">new</span>();
-            <span class="ident">font_desc</span>.<span class="ident">set_size</span>(<span class="ident">conf</span>.<span class="ident">config</span>.<span class="ident">font_size</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">*</span> <span class="ident">pango</span>::<span class="ident">SCALE</span>);
-            <span class="ident">font_desc</span>.<span class="ident">set_family</span>(<span class="kw-2">&amp;</span><span class="ident">conf</span>.<span class="ident">config</span>.<span class="ident">font_face</span>);
+            <span class="kw">let</span> <span class="ident">font_face</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">xi_config</span>.<span class="ident">borrow</span>().<span class="ident">config</span>.<span class="ident">font_face</span>;
+            <span class="ident">font_desc</span>.<span class="ident">set_size</span>(<span class="ident">xi_config</span>.<span class="ident">borrow</span>().<span class="ident">config</span>.<span class="ident">font_size</span> <span class="kw">as</span> <span class="ident">i32</span> <span class="op">*</span> <span class="ident">pango</span>::<span class="ident">SCALE</span>);
+            <span class="ident">font_desc</span>.<span class="ident">set_family</span>(<span class="ident">font_face</span>);
 
-            <span class="macro">trace</span><span class="macro">!</span>(
-                <span class="string">&quot;{}: {}&quot;</span>,
-                <span class="ident">gettext</span>(<span class="string">&quot;Setting font description&quot;</span>),
-                <span class="kw-2">&amp;</span><span class="ident">conf</span>.<span class="ident">config</span>.<span class="ident">font_face</span>
-            );
+            <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;Setting font description&quot;</span>), <span class="ident">font_face</span>);
 
             <span class="ident">font_chooser_widget</span>.<span class="ident">set_font_desc</span>(<span class="kw-2">&amp;</span><span class="ident">font_desc</span>);
         }
@@ -234,7 +216,7 @@
             <span class="ident">font_chooser_widget</span>.<span class="ident">connect_property_font_desc_notify</span>(
                 <span class="macro">clone</span><span class="macro">!</span>(<span class="ident">xi_config</span> <span class="op">=&gt;</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">font_widget</span><span class="op">|</span> {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">font_desc</span>) <span class="op">=</span> <span class="ident">font_widget</span>.<span class="ident">get_font_desc</span>() {
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">font_conf</span> <span class="op">=</span> <span class="ident">xi_config</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
+                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">font_conf</span> <span class="op">=</span> <span class="ident">xi_config</span>.<span class="ident">borrow_mut</span>();
 
                         <span class="kw">let</span> <span class="ident">font_family</span> <span class="op">=</span> <span class="ident">font_desc</span>.<span class="ident">get_family</span>().<span class="ident">unwrap</span>();
                         <span class="kw">let</span> <span class="ident">font_size</span> <span class="op">=</span> <span class="ident">font_desc</span>.<span class="ident">get_size</span>() <span class="op">/</span> <span class="ident">pango</span>::<span class="ident">SCALE</span>;
@@ -278,16 +260,14 @@
 
         {
             {
-                <span class="kw">let</span> <span class="ident">conf</span> <span class="op">=</span> <span class="ident">xi_config</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-                <span class="ident">scroll_past_end_checkbutton</span>.<span class="ident">set_active</span>(<span class="ident">conf</span>.<span class="ident">config</span>.<span class="ident">scroll_past_end</span>);
+                <span class="ident">scroll_past_end_checkbutton</span>.<span class="ident">set_active</span>(<span class="ident">xi_config</span>.<span class="ident">borrow</span>().<span class="ident">config</span>.<span class="ident">scroll_past_end</span>);
             }
 
             <span class="ident">scroll_past_end_checkbutton</span>.<span class="ident">connect_toggled</span>(<span class="macro">clone</span><span class="macro">!</span>(<span class="ident">xi_config</span> <span class="op">=&gt;</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">toggle_btn</span><span class="op">|</span> {
                 <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">toggle_btn</span>.<span class="ident">get_active</span>();;
                 <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;Scrolling past end&quot;</span>), <span class="ident">value</span>);
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">conf</span> <span class="op">=</span> <span class="ident">xi_config</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-                <span class="ident">conf</span>.<span class="ident">config</span>.<span class="ident">scroll_past_end</span> <span class="op">=</span> <span class="ident">value</span>;
-                <span class="ident">conf</span>.<span class="ident">save</span>()
+                <span class="ident">xi_config</span>.<span class="ident">borrow_mut</span>().<span class="ident">config</span>.<span class="ident">scroll_past_end</span> <span class="op">=</span> <span class="ident">value</span>;
+                <span class="ident">xi_config</span>.<span class="ident">borrow</span>().<span class="ident">save</span>()
                     .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>.<span class="ident">to_string</span>()))
                     .<span class="ident">unwrap</span>();
             }));
@@ -295,17 +275,14 @@
 
         {
             {
-                <span class="kw">let</span> <span class="ident">conf</span> <span class="op">=</span> <span class="ident">xi_config</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-
-                <span class="ident">word_wrap_checkbutton</span>.<span class="ident">set_active</span>(<span class="ident">conf</span>.<span class="ident">config</span>.<span class="ident">word_wrap</span>);
+                <span class="ident">word_wrap_checkbutton</span>.<span class="ident">set_active</span>(<span class="ident">xi_config</span>.<span class="ident">borrow</span>().<span class="ident">config</span>.<span class="ident">word_wrap</span>);
             }
 
             <span class="ident">word_wrap_checkbutton</span>.<span class="ident">connect_toggled</span>(<span class="macro">clone</span><span class="macro">!</span>(<span class="ident">xi_config</span> <span class="op">=&gt;</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">toggle_btn</span><span class="op">|</span> {
                 <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">toggle_btn</span>.<span class="ident">get_active</span>();
                 <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;Word wrapping&quot;</span>), <span class="ident">value</span>);
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">conf</span> <span class="op">=</span> <span class="ident">xi_config</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-                <span class="ident">conf</span>.<span class="ident">config</span>.<span class="ident">word_wrap</span> <span class="op">=</span> <span class="ident">value</span>;
-                <span class="ident">conf</span>.<span class="ident">save</span>()
+                <span class="ident">xi_config</span>.<span class="ident">borrow_mut</span>().<span class="ident">config</span>.<span class="ident">word_wrap</span> <span class="op">=</span> <span class="ident">value</span>;
+                <span class="ident">xi_config</span>.<span class="ident">borrow_mut</span>().<span class="ident">save</span>()
                     .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>.<span class="ident">to_string</span>()))
                     .<span class="ident">unwrap</span>();
             }));
@@ -313,17 +290,14 @@
 
         {
             {
-                <span class="kw">let</span> <span class="ident">conf</span> <span class="op">=</span> <span class="ident">xi_config</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-
-                <span class="ident">tab_stops_checkbutton</span>.<span class="ident">set_active</span>(<span class="ident">conf</span>.<span class="ident">config</span>.<span class="ident">use_tab_stops</span>);
+                <span class="ident">tab_stops_checkbutton</span>.<span class="ident">set_active</span>(<span class="ident">xi_config</span>.<span class="ident">borrow</span>().<span class="ident">config</span>.<span class="ident">use_tab_stops</span>);
             }
 
             <span class="ident">tab_stops_checkbutton</span>.<span class="ident">connect_toggled</span>(<span class="macro">clone</span><span class="macro">!</span>(<span class="ident">xi_config</span> <span class="op">=&gt;</span> <span class="kw">move</span> <span class="op">|</span><span class="ident">toggle_btn</span><span class="op">|</span> {
                 <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">toggle_btn</span>.<span class="ident">get_active</span>();
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">conf</span> <span class="op">=</span> <span class="ident">xi_config</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
                 <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">gettext</span>(<span class="string">&quot;Tab stops&quot;</span>), <span class="ident">value</span>);
-                <span class="ident">conf</span>.<span class="ident">config</span>.<span class="ident">use_tab_stops</span> <span class="op">=</span> <span class="ident">value</span>;
-                <span class="ident">conf</span>.<span class="ident">save</span>()
+                <span class="ident">xi_config</span>.<span class="ident">borrow_mut</span>().<span class="ident">config</span>.<span class="ident">use_tab_stops</span> <span class="op">=</span> <span class="ident">value</span>;
+                <span class="ident">xi_config</span>.<span class="ident">borrow</span>().<span class="ident">save</span>()
                     .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>.<span class="ident">to_string</span>()))
                     .<span class="ident">unwrap</span>();
             }));
@@ -338,7 +312,7 @@
             });
         }
 
-        <span class="kw">let</span> <span class="ident">prefs_win</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">RefCell</span>::<span class="ident">new</span>(<span class="ident">PrefsWin</span> {
+        <span class="kw">let</span> <span class="ident">prefs_win</span> <span class="op">=</span> <span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">RefCell</span>::<span class="ident">new</span>(<span class="self">Self</span> {
             <span class="ident">core</span>: <span class="ident">core</span>.<span class="ident">clone</span>(),
             <span class="ident">window</span>: <span class="ident">window</span>.<span class="ident">clone</span>(),
         }));
