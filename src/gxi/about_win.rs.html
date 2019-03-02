@@ -33,6 +33,8 @@
 <span id="33">33</span>
 <span id="34">34</span>
 <span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">gettextrs</span>::<span class="ident">gettext</span>;
 <span class="kw">use</span> <span class="ident">gtk</span>::<span class="kw-2">*</span>;
@@ -57,6 +59,8 @@
         <span class="ident">about_dialog</span>.<span class="ident">set_program_name</span>(<span class="string">&quot;gxi&quot;</span>);
         <span class="ident">about_dialog</span>.<span class="ident">set_website</span>(<span class="string">&quot;https://github.com/Cogitri/gxi&quot;</span>);
         <span class="ident">about_dialog</span>.<span class="ident">set_website_label</span>(<span class="ident">gettext</span>(<span class="string">&quot;gxi&#39;s Github Repo&quot;</span>).<span class="ident">as_str</span>());
+        <span class="ident">about_dialog</span>.<span class="ident">set_translator_credits</span>(<span class="string">&quot;maxice8 - pt_BR&quot;</span>);
+        <span class="ident">about_dialog</span>.<span class="ident">set_logo_icon_name</span>(<span class="string">&quot;com.github.Cogitri.gxi&quot;</span>);
 
         <span class="ident">about_dialog</span>.<span class="ident">set_authors</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;Brian Vincent&quot;</span>, <span class="string">&quot;Rasmus Thomsen&quot;</span>]);
 
