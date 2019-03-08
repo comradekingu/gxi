@@ -723,6 +723,17 @@ impl EditView {
 
                 let pango_ctx = self.view_item.get_pango_ctx();
 
+                if !line.cursor().is_empty() {
+                    set_source_color(cr, theme.line_highlight.unwrap_or(crate::theme::Color::from_u8s(245, 245, 245, 255)));
+                    cr.rectangle(
+                        0.0,
+                        self.edit_font.font_height * i as f64 + 1.0,
+                        f64::from(da_width),
+                        self.edit_font.font_height,
+                    )
+                    set_source_color(cr, theme.foreground);
+                }
+
                 let layout = self.create_layout_for_line(&pango_ctx, &main_state, line);
                 max_width = max(max_width, layout.get_extents().1.width);
                 // debug!("width={}", layout.get_extents().1.width);
